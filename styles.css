@@ -6,10 +6,11 @@
 
 #calculator {
     background-color: hsla(0, 0%, 20%, 1.0);
-    height: 180px;
+    height: 220px;
     display: flex;
     flex-direction: column;
     padding: 2px;
+    border-radius: 8px;
 }
 
 #resultsDisplay {
@@ -31,8 +32,10 @@
 }
 
 .button {
-    min-width: 40px;
+    min-width: 48px;
     padding: 0;
     background-color: hsla(0, 0%, 40%, 1.0);
     color: hsla(0, 0%, 95%, 1.0);
+    border-radius: 4px;
+    text-align: center;
 }
