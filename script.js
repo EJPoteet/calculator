@@ -3,6 +3,10 @@ let secondNum = 0;
 let operator = '';
 let updateFirstNum = false;
 let updateSecondNum = false;
+let addDecimalToFirstNum = false;
+let addDecimalToSecondNum = false;
+let disabledDecimal = false;
+let equationFinished = false;
 const operators = ['x', '/', '-', '+']
 const nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 const buttons = document.querySelectorAll('.button');
@@ -37,16 +41,27 @@ function calculate(firstNum, secondNum, operator) {
     }
 }
 
-//consider separating out the logic that updates the display to another function
 function updateNum(newValue, whichOperand) {
     if (whichOperand === 1) {
-        firstNum = Number(`${firstNum}${newValue}`);
-        updateFirstNum = true;
-        return;
+        if (addDecimalToFirstNum) {
+            firstNum = Number(`${firstNum}.${newValue}`);
+            updateFirstNum = true;
+            addDecimalToFirstNum = false;
+        } else {
+            firstNum = Number(`${firstNum}${newValue}`);
+            updateFirstNum = true;
+            return;
+        }
     } else if (whichOperand === 2) {
-        secondNum = Number(`${secondNum}${newValue}`);
-        updateSecondNum = true;
-        return;
+        if (addDecimalToSecondNum) {
+            secondNum = Number(`${secondNum}.${newValue}`);
+            updateSecondNum = true;
+            addDecimalToSecondNum = false;
+        } else {
+            secondNum = Number(`${secondNum}${newValue}`);
+            updateSecondNum = true;
+            return;
+        }
     }
 }
 
@@ -56,36 +71,99 @@ function clearValues() {
     operator = '';
     updateFirstNum = false;
     updateSecondNum = false;
+    equationFinished = false;
+    addDecimalToFirstNum = false;
+    addDecimalToSecondNum = false;
+    disabledDecimal = false;
     resultsDisplay.textContent = '0';
+}
+
+function checkForDecimal(num) {
+    return Number.isInteger(num) ? num : num.toFixed(2);
 }
 
 buttons.forEach(button => {
     const buttonValue = button.textContent;
 
-    button.addEventListener('click', () => {
-        if (!operator && nums.includes(buttonValue)) {
-            updateNum(buttonValue, 1);
-            resultsDisplay.textContent = `${firstNum}`;
-        } else if (updateFirstNum && !updateSecondNum && operators.includes(buttonValue)) {
-            operator = buttonValue;
-            resultsDisplay.textContent = `${firstNum} ${operator}`;
-        } else if (updateSecondNum && operators.includes(buttonValue)) {
-            firstNum = calculate(firstNum, secondNum, operator);
-            operator = buttonValue
-            resultsDisplay.textContent = `${firstNum} ${operator}`;
-            secondNum = 0;
-            updateSecondNum = false;
-        } else if (operator && nums.includes(buttonValue)) {
-            updateNum(buttonValue, 2);
-            resultsDisplay.textContent = `${firstNum} ${operator} ${secondNum}`;
-        } else if (operator && buttonValue === '=') {
-            firstNum = calculate(firstNum, secondNum, operator);
-            resultsDisplay.textContent = `${firstNum}`;
-            operator = '';
-            secondNum = 0;
-            updateSecondNum = false;
-        } else if (buttonValue === 'Clear') {
+    if (nums.includes(buttonValue)) {
+        button.addEventListener('click', () => {
+            if (!operator && !equationFinished) {
+                updateNum(buttonValue, 1);
+                resultsDisplay.textContent = `${firstNum}`;
+                console.log(disabledDecimal);
+
+            } else if (!operator && equationFinished) {
+                equationFinished = false;
+                firstNum = 0;
+                updateNum(buttonValue, 1);
+                resultsDisplay.textContent = `${firstNum}`;
+                console.log(disabledDecimal);
+
+            } else if (operator) {
+                updateNum(buttonValue, 2);
+                resultsDisplay.textContent = `${firstNum} ${operator} ${secondNum}`;
+                console.log(disabledDecimal);
+            }
+        })
+
+    } else if (operators.includes(buttonValue)) {
+        button.addEventListener('click', () => {
+            if (updateFirstNum && !updateSecondNum) {
+                operator = buttonValue;
+                resultsDisplay.textContent = `${firstNum} ${operator}`;
+                disabledDecimal = false;
+                console.log(disabledDecimal);
+
+            } else if (updateSecondNum && !(operator === '/' && secondNum === 0)) {
+                firstNum = checkForDecimal(calculate(firstNum, secondNum, operator));
+                operator = buttonValue
+                resultsDisplay.textContent = `${firstNum} ${operator}`;
+                secondNum = 0;
+                updateSecondNum = false;
+                disabledDecimal = false;
+                console.log(disabledDecimal);
+            }
+        })
+
+    } else if (buttonValue === '=') {
+        button.addEventListener('click', () => {
+            if (operator === '/' && secondNum === 0) {
+                resultsDisplay.textContent = 'Rude! Stop that.';
+            } else if (operator && updateSecondNum) {
+                firstNum = checkForDecimal(calculate(firstNum, secondNum, operator));
+                resultsDisplay.textContent = `${firstNum}`;
+                equationFinished = true;
+                operator = '';
+                secondNum = 0;
+                updateSecondNum = false;
+                console.log(disabledDecimal);
+            }
+        })
+
+    } else if (buttonValue === 'Clear') {
+        button.addEventListener('click', () => {
             clearValues();
-        }
-    })
+        })
+    }
+
+    else if (buttonValue === '.') {
+        button.addEventListener('click', () => {
+            if (equationFinished && !operator) {
+                resultsDisplay.textContent = '0.';
+                addDecimalToFirstNum = true;
+                disabledDecimal = true;
+                console.log(disabledDecimal);
+            } else if (!disabledDecimal && !operator) {
+                resultsDisplay.textContent = `${firstNum}.`;
+                addDecimalToFirstNum = true;
+                disabledDecimal = true;
+                console.log(disabledDecimal);
+            } else if (!disabledDecimal && operator) {
+                resultsDisplay.textContent = `${firstNum} ${operator} ${secondNum}.`;
+                addDecimalToSecondNum = true;
+                disabledDecimal = true;
+                console.log(disabledDecimal);
+            }
+        })
+    }
 })
