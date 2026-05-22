@@ -41,7 +41,6 @@ function calculate(firstNum, secondNum, operator) {
 function updateNum(newValue, whichOperand) {
     if (whichOperand === 1) {
         firstNum = Number(`${firstNum}${newValue}`);
-        resultsDisplay.textContent = `${firstNum}`;
         updateFirstNum = true;
         return;
     } else if (whichOperand === 2) {
@@ -51,12 +50,22 @@ function updateNum(newValue, whichOperand) {
     }
 }
 
+function clearValues() {
+    firstNum = 0;
+    secondNum = 0;
+    operator = '';
+    updateFirstNum = false;
+    updateSecondNum = false;
+    resultsDisplay.textContent = '0';
+}
+
 buttons.forEach(button => {
     const buttonValue = button.textContent;
 
     button.addEventListener('click', () => {
         if (!operator && nums.includes(buttonValue)) {
             updateNum(buttonValue, 1);
+            resultsDisplay.textContent = `${firstNum}`;
         } else if (updateFirstNum && !updateSecondNum && operators.includes(buttonValue)) {
             operator = buttonValue;
             resultsDisplay.textContent = `${firstNum} ${operator}`;
@@ -76,12 +85,7 @@ buttons.forEach(button => {
             secondNum = 0;
             updateSecondNum = false;
         } else if (buttonValue === 'Clear') {
-            firstNum = 0;
-            secondNum = 0;
-            operator = '';
-            updateFirstNum = false;
-            updateSecondNum = false;
-            resultsDisplay.textContent = '0';
+            clearValues();
         }
     })
 })
